@@ -2,28 +2,22 @@ const w4 = @import("wasm4.zig");
 const std = @import("std");
 const global = @import("globals.zig");
 
-const Vec2D = struct {
-    x: i32,
-    y: i32,
-};
-
-pub const Tileset = struct {
-    tileset: []const u8,
+pub const Sheet = struct {
+    sheet: []const u8,
 
     /// Dimensions are in tiles, not px
     width: u32,
     height: u32,
 
-    pub fn init(tileset: []const u8, width: u32, height: u32) Tileset {
+    pub fn init(sheet: []const u8, width: u32, height: u32) Sheet {
         return .{
-            .tileset = tileset,
+            .sheet = sheet,
             .width = width,
             .height = height,
         };
     }
 
-    // TODO: boundary check index
-    pub fn getTileCoords(self: Tileset, index: u32) struct { x: u32, y: u32 } {
+    pub fn getTileSrc(self: Sheet, index: u32) struct { x: u32, y: u32 } {
         return .{
             .x = @rem((index - 1), self.width) * global.TILE_SIZE,
             .y = @divTrunc((index - 1), self.width) * global.TILE_SIZE,
@@ -31,16 +25,16 @@ pub const Tileset = struct {
     }
 };
 
-pub const Tilegrid = struct {
-    tilegrid: []const u8,
+pub const Grid = struct {
+    grid: []const u8,
 
     /// Dimensions are in tiles, not px
     width: u32,
     height: u32,
 
-    pub fn init(tilegrid: []const u8, width: u32, height: u32) Tilegrid {
+    pub fn init(grid: []const u8, width: u32, height: u32) Grid {
         return .{
-            .tilegrid = tilegrid,
+            .grid = grid,
             .width = width,
             .height = height,
         };
@@ -48,13 +42,13 @@ pub const Tilegrid = struct {
 };
 
 pub const Tilemap = struct {
-    tileset: Tileset,
-    tilegrid: Tilegrid,
+    sheet: Sheet,
+    grid: Grid,
 
-    pub fn init(tileset: Tileset, tilegrid: Tilegrid) Tilemap {
+    pub fn init(sheet: Sheet, grid: Grid) Tilemap {
         return .{
-            .tileset = tileset,
-            .tilegrid = tilegrid,
+            .sheet = sheet,
+            .grid = grid,
         };
     }
 
@@ -63,26 +57,27 @@ pub const Tilemap = struct {
         var row: u8 = 0;
         var column: u8 = 0;
 
-        for (self.tilegrid.tilegrid) |tile| {
+        for (self.grid.grid) |tile| {
             if (tile != 0) {
 
                 // calculate the camera relative positions of world tiles
-                const tile_loc: Vec2D = .{
+                const tile_loc: global.Vec2D = .{
                     .x = (@as(i32, global.TILE_SIZE) * column) - x,
                     .y = (@as(i32, global.TILE_SIZE) * row) - y,
                 };
 
-                const src_loc = self.tileset.getTileCoords(tile);
+                const src_loc = self.sheet.getTileSrc(tile);
 
+                w4.DRAW_COLORS.* = 0x0234;
                 w4.blitSub(
-                    self.tileset.tileset.ptr,
+                    self.sheet.sheet.ptr,
                     tile_loc.x,
                     tile_loc.y,
                     global.TILE_SIZE,
                     global.TILE_SIZE,
                     src_loc.x,
                     src_loc.y,
-                    (self.tileset.width * global.TILE_SIZE),
+                    (self.sheet.width * global.TILE_SIZE),
                     w4.BLIT_2BPP,
                 );
             }
@@ -90,7 +85,7 @@ pub const Tilemap = struct {
             // iterate through the shape of the map
             column += 1;
 
-            if (column == self.tilegrid.width) {
+            if (column == self.grid.width) {
                 column = 0;
                 row += 1;
             }

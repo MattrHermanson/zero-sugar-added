@@ -1,17 +1,16 @@
 const w4 = @import("wasm4.zig");
 const std = @import("std");
 
-const checkered = @import("checkered.zig");
-const colored = @import("colored.zig");
-const world_tileset = @import("tilesheet.zig");
+const world_tileset = @import("worldTileset.zig");
 const Tilemap = @import("tilemap.zig");
+const Sprite = @import("sprite.zig");
 
 // TODO:
-// 1. implement 16x16 tile system & indepenent sprite spawning
-// 4. player movement - velocity based
-// 5. camera system - stays in place until you get close to the edge, stops at world border
-// 2. implement entity interface?
-// 3. implement collision (entity vs tile & entity vs entity)
+// X. implement 16x16 tile system & indepenent sprite spawning
+// 2. player movement - velocity based
+// 3. camera system - stays in place until you get close to the edge, stops at world border
+// 4. implement entity interface?
+// 5. implement collision (entity vs tile & entity vs entity)
 
 // 10x10 tile map
 var map = [_]u8{
@@ -27,13 +26,26 @@ var map = [_]u8{
     8, 7, 8, 7, 8, 7, 8, 7, 8, 7,
 };
 
+var player_sprite = [_]u8{
+    0b11111111,
+    0b11111111,
+    0b11111111,
+    0b11111111,
+    0b11111111,
+    0b11111111,
+    0b11111111,
+    0b11111111,
+};
+
 var global_x: i32 = 0;
 var global_y: i32 = 0;
 
-const tileset = Tilemap.Tileset.init(&world_tileset.tilesheet, 4, 4);
-const tilegrid = Tilemap.Tilegrid.init(map[0..], 10, 10);
-
+// world tileset
+const tileset = Tilemap.Sheet.init(&world_tileset.tilesheet, 4, 4);
+const tilegrid = Tilemap.Grid.init(map[0..], 10, 10);
 const world = Tilemap.Tilemap.init(tileset, tilegrid);
+
+const player = Sprite.Sprite.init(player_sprite[0..], 8, 8, 80, 80);
 
 fn input() void {
     const gamepad = w4.GAMEPAD1.*;
@@ -67,4 +79,5 @@ export fn start() void {
 export fn update() void {
     input();
     world.draw(global_x, global_y);
+    player.draw();
 }
