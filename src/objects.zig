@@ -2,6 +2,7 @@ const w4 = @import("wasm4.zig");
 const std = @import("std");
 const global = @import("globals.zig");
 
+// In world image
 pub const Sprite = struct {
     sprite: []const u8,
 
@@ -20,6 +21,10 @@ pub const Sprite = struct {
                 .y = y,
             },
         };
+    }
+
+    pub fn move(self: *Sprite, new_pos: global.Vec2D) void {
+        self.pos = new_pos;
     }
 
     pub fn draw(self: Sprite) void {

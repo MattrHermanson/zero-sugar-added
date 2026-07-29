@@ -3,7 +3,7 @@ const std = @import("std");
 
 const world_tileset = @import("worldTileset.zig");
 const Tilemap = @import("tilemap.zig");
-const Sprite = @import("sprite.zig");
+const Object = @import("objects.zig");
 
 // TODO:
 // X. implement 16x16 tile system & indepenent sprite spawning
@@ -45,7 +45,7 @@ const tileset = Tilemap.Sheet.init(&world_tileset.tilesheet, 4, 4);
 const tilegrid = Tilemap.Grid.init(map[0..], 10, 10);
 const world = Tilemap.Tilemap.init(tileset, tilegrid);
 
-const player = Sprite.Sprite.init(player_sprite[0..], 8, 8, 80, 80);
+const player = Object.Sprite.init(player_sprite[0..], 8, 8, 80, 80);
 
 fn input() void {
     const gamepad = w4.GAMEPAD1.*;
